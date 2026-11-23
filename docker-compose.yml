@@ -1,0 +1,39 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: freshmeat-backend
+    restart: unless-stopped
+    ports:
+      - "5001:5001"
+    environment:
+      - PORT=5001
+      - FLASK_ENV=production
+      - SECRET_KEY=fresh-meat-market-super-secret-key-prod-2026
+      - JWT_SECRET_KEY=jwt-fresh-meat-market-secret-key-prod-2026
+      - USE_SQLITE_FALLBACK=true
+      - CORS_ORIGINS=*
+    volumes:
+      - backend-data:/app/instance
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: freshmeat-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  backend-data:
