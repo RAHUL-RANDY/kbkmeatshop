@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, ShieldCheck, Tag, Check, Sparkles, MapPin, CreditCard, Banknote, AlertCircle, Calendar } from 'lucide-react';
+import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, ShieldCheck, Tag, Check, Sparkles, MapPin, CreditCard, Banknote, AlertCircle, Calendar, QrCode, Copy, ExternalLink } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import api from '../services/api';
+import { translations } from '../utils/translations';
 
 export default function CartDrawer({
   isOpen,
@@ -10,15 +11,19 @@ export default function CartDrawer({
   onUpdateQty,
   onRemoveItem,
   onClearCart,
-  onCheckoutSuccess
+  onCheckoutSuccess,
+  lang = 'en'
 }) {
+  const t = translations[lang] || translations.en;
   const [couponCode, setCouponCode] = useState('');
   const [appliedDiscount, setAppliedDiscount] = useState(0); // in percent
   const [couponMessage, setCouponMessage] = useState(null);
   
   // Checkout options
   const [step, setStep] = useState('cart'); // 'cart' or 'checkout'
-  const paymentMethod = 'COD'; // Only Cash on Delivery (Online payments removed as requested)
+  const [paymentMethod, setPaymentMethod] = useState('COD'); // 'COD' | 'UPI'
+  const [upiUtr, setUpiUtr] = useState('');
+  const [copiedUpi, setCopiedUpi] = useState(false);
   const [deliveryDay, setDeliveryDay] = useState('Saturday Morning (6 AM - 10 AM)');
   const [deliveryAddress, setDeliveryAddress] = useState({
     recipient_name: '',
@@ -27,7 +32,7 @@ export default function CartDrawer({
     address_line: '',
     city: '',
     state: 'Tamil Nadu',
-    pincode: ''
+    pincode: localStorage.getItem('kbk_delivery_pincode') || ''
   });
   const [loading, setLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState(null);
@@ -84,7 +89,7 @@ export default function CartDrawer({
     setCheckoutError(null);
 
     try {
-      // 1. Place order on backend (COD Only)
+      // 1. Place order on backend
       const orderPayload = {
         recipient_name: deliveryAddress.recipient_name.trim(),
         phone: deliveryAddress.phone.trim(),
@@ -92,9 +97,9 @@ export default function CartDrawer({
         address_line: deliveryAddress.address_line.trim(),
         city: deliveryAddress.city || 'Chennai',
         pincode: deliveryAddress.pincode || '600040',
-        payment_method: 'COD',
+        payment_method: paymentMethod,
         delivery_day: deliveryDay,
-        notes: `Weekend Delivery: ${deliveryDay}`,
+        notes: `Weekend Delivery: ${deliveryDay}${paymentMethod === 'UPI' ? ` | Paid via UPI (Ref/UTR: ${upiUtr.trim() || 'Pre-Paid'})` : ''}`,
         coupon_code: appliedDiscount > 0 ? (appliedDiscount === 30 ? 'PRIME30' : 'FRESH20') : null,
         items: cartItems
       };
@@ -115,7 +120,7 @@ export default function CartDrawer({
         orderId: placedOrder.order_number,
         grandTotal: placedOrder.total_amount,
         items: placedOrder.items || cartItems,
-        paymentMethod: 'Cash on Delivery',
+        paymentMethod: paymentMethod === 'UPI' ? 'Instant UPI (Pre-Paid)' : 'Cash on Delivery',
         deliveryFee: placedOrder.delivery_charge,
         discountAmount: placedOrder.discount_amount,
         customerName: deliveryAddress.recipient_name.trim(),
@@ -140,7 +145,7 @@ export default function CartDrawer({
         orderId: `FMM-${Math.floor(100000 + Math.random() * 900000)}`,
         grandTotal,
         items: cartItems,
-        paymentMethod: 'Cash on Delivery',
+        paymentMethod: paymentMethod === 'UPI' ? 'Instant UPI (Pre-Paid)' : 'Cash on Delivery',
         deliveryFee,
         discountAmount,
         customerName: deliveryAddress.recipient_name.trim(),
@@ -458,29 +463,122 @@ export default function CartDrawer({
                 </div>
               </div>
 
-              {/* Payment Method - Cash on Delivery Only */}
-              <div className="space-y-2 pt-2 border-t border-white/10">
+              {/* Payment Method Selection: COD or Instant UPI QR */}
+              <div className="space-y-2.5 pt-2 border-t border-white/10">
                 <label className="text-xs font-bold text-white flex items-center gap-1.5">
                   <Banknote className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Payment Method</span>
+                  <span>{t.paymentMethod}</span>
                 </label>
 
-                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-black/40 to-black/40 border border-emerald-500/30 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0">
-                    <Banknote className="w-5 h-5 text-emerald-400" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-white">Cash on Delivery (COD)</span>
-                      <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                        Doorstep Pay
+                <div className="grid grid-cols-2 gap-2">
+                  {/* COD Option */}
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('COD')}
+                    className={`p-3 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                      paymentMethod === 'COD'
+                        ? 'bg-emerald-950/60 border-emerald-500 shadow-lg shadow-emerald-950/50'
+                        : 'bg-black/40 border-white/10 hover:border-white/20'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <Banknote className={`w-5 h-5 ${paymentMethod === 'COD' ? 'text-emerald-400' : 'text-gray-400'}`} />
+                      <span className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                        paymentMethod === 'COD' ? 'border-emerald-400 bg-emerald-500' : 'border-gray-500'
+                      }`}>
+                        {paymentMethod === 'COD' && <Check className="w-3 h-3 text-black stroke-[3]" />}
                       </span>
                     </div>
-                    <p className="text-[11px] text-gray-400 mt-0.5">
-                      Pay safely via Cash or UPI QR when your chilled order arrives at your doorstep.
-                    </p>
-                  </div>
+                    <div>
+                      <span className="text-xs font-bold text-white block">Cash on Delivery</span>
+                      <span className="text-[10px] text-gray-400">Pay on weekend delivery</span>
+                    </div>
+                  </button>
+
+                  {/* UPI QR Option */}
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('UPI')}
+                    className={`p-3 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                      paymentMethod === 'UPI'
+                        ? 'bg-rose-950/60 border-rose-500 shadow-lg shadow-rose-950/50'
+                        : 'bg-black/40 border-white/10 hover:border-white/20'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <QrCode className={`w-5 h-5 ${paymentMethod === 'UPI' ? 'text-rose-400' : 'text-gray-400'}`} />
+                      <span className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                        paymentMethod === 'UPI' ? 'border-rose-400 bg-rose-500' : 'border-gray-500'
+                      }`}>
+                        {paymentMethod === 'UPI' && <Check className="w-3 h-3 text-white stroke-[3]" />}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-xs font-bold text-white block">Instant UPI QR</span>
+                      <span className="text-[10px] text-rose-300">GPay, PhonePe, Paytm</span>
+                    </div>
+                  </button>
                 </div>
+
+                {/* When UPI is chosen: show QR Code, Store UPI ID, and UTR input */}
+                {paymentMethod === 'UPI' && (
+                  <div className="p-3.5 rounded-2xl bg-black/60 border border-rose-500/30 text-xs space-y-3 animate-in fade-in duration-200">
+                    <div className="flex flex-col sm:flex-row items-center gap-3">
+                      {/* Dynamic UPI QR Code */}
+                      <div className="p-2 rounded-xl bg-white shadow-md shrink-0 flex items-center justify-center">
+                        <img
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(
+                            `upi://pay?pa=9842729718@upi&pn=KBK%20MEAT%20SHOP&am=${grandTotal}&cu=INR&tn=Order%20PreBooking`
+                          )}`}
+                          alt="KBK Meat Shop UPI QR"
+                          className="w-28 h-28 object-contain"
+                        />
+                      </div>
+
+                      <div className="flex-1 text-center sm:text-left space-y-1.5">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-rose-400 block">
+                          Scan to Pay ₹{grandTotal}
+                        </span>
+                        <p className="text-[11px] text-gray-300">
+                          Scan using GPay, PhonePe, Paytm, or BHIM.
+                        </p>
+
+                        {/* Store UPI ID & Copy button */}
+                        <div className="flex items-center justify-center sm:justify-start gap-1.5 pt-1">
+                          <code className="px-2 py-1 rounded bg-white/10 font-mono text-[11px] text-white font-bold border border-white/10">
+                            9842729718@upi
+                          </code>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              navigator.clipboard.writeText('9842729718@upi');
+                              setCopiedUpi(true);
+                              setTimeout(() => setCopiedUpi(false), 2000);
+                            }}
+                            className="p-1 rounded bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white cursor-pointer"
+                            title="Copy UPI ID"
+                          >
+                            {copiedUpi ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Optional UTR Input */}
+                    <div>
+                      <label className="block text-[10px] font-semibold text-gray-300 mb-1">
+                        {t.utrLabel}
+                      </label>
+                      <input
+                        type="text"
+                        value={upiUtr}
+                        onChange={(e) => setUpiUtr(e.target.value)}
+                        placeholder={t.utrPlaceholder}
+                        className="w-full px-3 py-1.5 rounded-lg glass-input text-xs font-mono"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}

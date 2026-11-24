@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Search, ShoppingBag, ChevronDown, Menu, X, ShieldCheck } from 'lucide-react';
+import { Search, ShoppingBag, ChevronDown, Menu, X, ShieldCheck, Globe, MapPin } from 'lucide-react';
+import { translations } from '../utils/translations';
 
 export default function Navbar({
   cartCount,
@@ -9,8 +10,13 @@ export default function Navbar({
   setSearchQuery,
   activeSection,
   setActiveSection,
-  onSelectCategory
+  onSelectCategory,
+  lang = 'en',
+  setLang,
+  onOpenPincodeChecker,
+  verifiedPincode
 }) {
+  const t = translations[lang] || translations.en;
   const [isScrolled, setIsScrolled] = useState(false);
   const [showMeatMenu, setShowMeatMenu] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -38,10 +44,10 @@ export default function Navbar({
       <div className="max-w-7xl mx-auto px-4 py-1 rounded-full bg-black/60 backdrop-blur-md border border-rose-500/30 text-center text-[10px] sm:text-xs font-medium text-rose-200 flex items-center justify-center gap-2 shadow-lg">
         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
         <span className="truncate">
-          <strong className="text-white">Pre-Book Mon–Fri:</strong> Farm-harvested fresh & delivered exclusively on <strong className="text-emerald-400">Saturday & Sunday Morning</strong>!
+          {t.topBarNotice}
         </span>
         <span className="hidden sm:inline-block text-gray-500">•</span>
-        <span className="hidden sm:inline-block text-emerald-300 font-semibold text-[10px] uppercase tracking-wider">Cash on Delivery</span>
+        <span className="hidden sm:inline-block text-emerald-300 font-semibold text-[10px] uppercase tracking-wider">{t.cashOnDelivery}</span>
       </div>
 
       <div className={`max-w-7xl mx-auto rounded-2xl transition-all duration-300 ${
@@ -85,7 +91,7 @@ export default function Navbar({
                   : 'text-gray-300 hover:text-white hover:bg-white/5'
               }`}
             >
-              Home
+              {t.navHome}
             </button>
 
             <button
@@ -96,7 +102,7 @@ export default function Navbar({
                   : 'text-gray-300 hover:text-white hover:bg-white/5'
               }`}
             >
-              About
+              {t.navAbout}
             </button>
 
             {/* Meat Market Dropdown */}
@@ -113,7 +119,7 @@ export default function Navbar({
                     : 'text-gray-300 hover:text-white hover:bg-white/5'
                 }`}
               >
-                <span>Meat Shop</span>
+                <span>{t.navMeatShop}</span>
                 <ChevronDown className="w-3.5 h-3.5 opacity-70 transition-transform duration-200 group-hover:rotate-180" />
               </button>
 
@@ -129,7 +135,7 @@ export default function Navbar({
                     className="w-full text-left px-4 py-2 text-xs font-medium text-gray-200 hover:text-white hover:bg-rose-900/40 flex items-center gap-2"
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-                    Fresh Chicken
+                    {t.catChicken}
                   </button>
                   <button
                     onClick={() => {
@@ -140,7 +146,7 @@ export default function Navbar({
                     className="w-full text-left px-4 py-2 text-xs font-medium text-gray-200 hover:text-white hover:bg-rose-900/40 flex items-center gap-2"
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-                    Fresh Mutton
+                    {t.catMutton}
                   </button>
                   <button
                     onClick={() => {
@@ -151,7 +157,7 @@ export default function Navbar({
                     className="w-full text-left px-4 py-2 text-xs font-medium text-gray-200 hover:text-white hover:bg-rose-900/40 flex items-center gap-2"
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-                    Fresh Fish & Seafood
+                    {t.catFish}
                   </button>
                 </div>
               )}
@@ -164,7 +170,7 @@ export default function Navbar({
               }}
               className="px-3.5 py-1.5 rounded-full text-xs font-medium tracking-wide text-gray-300 hover:text-white hover:bg-white/5 transition-all"
             >
-              Eggs
+              {t.navEggs}
             </button>
 
             <button
@@ -175,7 +181,7 @@ export default function Navbar({
                   : 'text-gray-300 hover:text-white hover:bg-white/5'
               }`}
             >
-              Contact
+              {t.navContact}
             </button>
           </nav>
 
@@ -199,17 +205,38 @@ export default function Navbar({
             )}
           </div>
 
-          {/* Right Action Icons: Admin, Cart & Mobile Menu */}
-          <div className="flex items-center gap-2 sm:gap-2.5">
+          {/* Right Action Icons: Language, Pincode, Admin, Cart & Mobile Menu */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            
+            {/* Language Switcher Pill */}
+            <button
+              onClick={() => setLang && setLang(lang === 'en' ? 'ta' : 'en')}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-white/10 hover:bg-rose-950/60 border border-white/20 hover:border-rose-500/40 text-white text-xs font-bold hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-sm"
+              title={lang === 'en' ? 'Switch to Tamil (தமிழ்)' : 'Switch to English'}
+            >
+              <Globe className="w-3.5 h-3.5 text-amber-300" />
+              <span>{lang === 'en' ? 'தமிழ்' : 'ENG'}</span>
+            </button>
+
+            {/* Pincode / Area Availability Checker */}
+            <button
+              onClick={onOpenPincodeChecker}
+              className="hidden md:flex items-center gap-1 px-2.5 py-1.5 rounded-full btn-glass text-gray-200 hover:text-white border border-white/20 text-xs font-semibold hover:scale-105 active:scale-95 transition-all cursor-pointer"
+              title="Check Doorstep Delivery Pincode"
+            >
+              <MapPin className="w-3.5 h-3.5 text-rose-400" />
+              <span className="truncate max-w-[90px]">{verifiedPincode ? `PIN: ${verifiedPincode}` : t.checkPincode}</span>
+            </button>
+
             {/* Admin Panel Button */}
             {onOpenAdmin && (
               <button
                 onClick={onOpenAdmin}
-                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full btn-glass text-rose-300 hover:text-white border border-rose-500/30 hover:border-rose-400 text-xs font-semibold hover:scale-105 active:scale-95 transition-all shadow-sm cursor-pointer"
+                className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-full btn-glass text-rose-300 hover:text-white border border-rose-500/30 hover:border-rose-400 text-xs font-semibold hover:scale-105 active:scale-95 transition-all shadow-sm cursor-pointer"
                 title="Open Admin Dashboard"
               >
                 <ShieldCheck className="w-3.5 h-3.5 text-rose-400" />
-                <span>Admin Panel</span>
+                <span>Admin</span>
               </button>
             )}
 
@@ -220,7 +247,7 @@ export default function Navbar({
               aria-label="Open Shopping Cart"
             >
               <ShoppingBag className="w-4 h-4 text-white" />
-              <span className="hidden sm:inline text-xs font-semibold">Cart</span>
+              <span className="hidden sm:inline text-xs font-semibold">{t.cart}</span>
               {cartCount > 0 && (
                 <span className="absolute -top-1 -right-1 sm:static sm:top-auto sm:right-auto bg-gradient-to-r from-red-600 to-rose-500 text-white text-[10px] font-black w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center shadow-md animate-pulse">
                   {cartCount}
@@ -250,9 +277,23 @@ export default function Navbar({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search meat, chicken, eggs..."
+                placeholder={t.searchPlaceholder}
                 className="w-full pl-9 pr-3 py-2 rounded-xl text-xs glass-input"
               />
+            </div>
+
+            {/* Mobile Quick Action Pills: Pincode */}
+            <div className="flex gap-2 mb-1">
+              <button
+                onClick={() => {
+                  if (onOpenPincodeChecker) onOpenPincodeChecker();
+                  setIsMobileMenuOpen(false);
+                }}
+                className="flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20 text-white flex items-center justify-center gap-1.5"
+              >
+                <MapPin className="w-3.5 h-3.5 text-rose-400" />
+                <span>{verifiedPincode ? `PIN: ${verifiedPincode}` : t.checkPincode}</span>
+              </button>
             </div>
 
             <div className="grid grid-cols-2 gap-2 text-center">

@@ -8,11 +8,14 @@ import {
   ShieldCheck, 
   ShoppingBag,
   Calendar,
-  Phone
+  Phone,
+  Printer
 } from 'lucide-react';
+import { translations } from '../utils/translations';
 
-export default function OrderSuccessModal({ orderData, onClose }) {
+export default function OrderSuccessModal({ orderData, onClose, lang = 'en' }) {
   const [copiedId, setCopiedId] = useState(false);
+  const t = translations[lang] || translations.en;
 
   if (!orderData) return null;
 
@@ -32,6 +35,85 @@ export default function OrderSuccessModal({ orderData, onClose }) {
     navigator.clipboard.writeText(orderId);
     setCopiedId(true);
     setTimeout(() => setCopiedId(false), 2000);
+  };
+
+  const handlePrintReceipt = () => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+    
+    const itemsHtml = (orderData.items || []).map(item => `
+      <tr>
+        <td style="padding: 8px; border-bottom: 1px solid #ddd;">${item.name || item.product_name} (${item.selectedWeight || item.selected_weight || '1 kg'})</td>
+        <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center;">${item.quantity}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">₹${item.price || item.total_price || (item.unit_price * item.quantity)}</td>
+      </tr>
+    `).join('');
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>KBK Meat Shop - Receipt ${orderId}</title>
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 25px; color: #222; max-width: 600px; margin: 0 auto; line-height: 1.5; }
+          .header { text-align: center; border-bottom: 2px dashed #b91c1c; padding-bottom: 15px; margin-bottom: 15px; }
+          .logo-text { font-size: 24px; font-weight: 900; color: #b91c1c; margin: 0; }
+          .sub { font-size: 12px; color: #555; margin-top: 3px; }
+          .info-table { width: 100%; font-size: 12px; margin-bottom: 15px; }
+          .info-table td { padding: 4px 0; }
+          .items-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 15px; }
+          .items-table th { background: #f3f4f6; padding: 8px; text-align: left; border-bottom: 2px solid #ddd; font-size: 11px; text-transform: uppercase; }
+          .total-box { font-size: 13px; font-weight: bold; text-align: right; margin-top: 10px; border-top: 2px solid #222; padding-top: 8px; }
+          .footer-note { margin-top: 25px; text-align: center; font-size: 11px; color: #666; border-top: 1px solid #eee; padding-top: 12px; }
+          @media print { button { display: none; } }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1 class="logo-text">🥩 KBK MEAT SHOP</h1>
+          <div class="sub">Fresh Chicken &amp; Mutton • Farm-Harvested Weekend Meat Market</div>
+          <div class="sub">Helpline: +91 98427 29718 | Email: kbkmeatshop@gmail.com</div>
+        </div>
+
+        <table class="info-table">
+          <tr><td><strong>Order ID:</strong> ${orderId}</td><td style="text-align: right;"><strong>Date:</strong> ${new Date().toLocaleDateString()}</td></tr>
+          <tr><td><strong>Customer:</strong> ${customerName}</td><td style="text-align: right;"><strong>Phone:</strong> ${customerPhone}</td></tr>
+          <tr><td colspan="2"><strong>Delivery Address:</strong> ${address}</td></tr>
+          <tr><td colspan="2"><strong>Delivery Timing:</strong> ${deliverySchedule}</td></tr>
+          <tr><td colspan="2"><strong>Payment Method:</strong> ${orderData.paymentMethod || 'Cash on Delivery'}</td></tr>
+        </table>
+
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th>Item &amp; Weight</th>
+              <th style="text-align: center;">Qty</th>
+              <th style="text-align: right;">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemsHtml}
+          </tbody>
+        </table>
+
+        <div class="total-box">
+          <div>Subtotal: ₹${orderData.subtotal || grandTotal}</div>
+          ${orderData.deliveryFee ? `<div>Weekend Delivery Fee: ₹${orderData.deliveryFee}</div>` : '<div>Weekend Delivery: FREE</div>'}
+          <div style="font-size: 18px; color: #b91c1c; margin-top: 5px;">Total Amount: ₹${grandTotal}</div>
+        </div>
+
+        <div class="footer-note">
+          <p><strong>Quality Assurance:</strong> 100% Halal Slaughtered, Hand-Cleaned &amp; Chilled.</p>
+          <p><strong>Privacy Policy:</strong> Customer contact details and order records will be permanently erased 2 days after delivery.</p>
+          <p>Thank you for ordering with KBK MEAT SHOP! Helpline: +91 98427 29718</p>
+        </div>
+        <script>
+          window.onload = function() { window.print(); }
+        </script>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
   };
 
   return (
@@ -120,22 +202,34 @@ export default function OrderSuccessModal({ orderData, onClose }) {
         </div>
 
         {/* Quality Guarantee Box */}
-        <div className="p-3 rounded-xl bg-emerald-950/40 border border-emerald-500/20 text-left flex items-center gap-3 text-xs mb-5">
+        <div className="p-3 rounded-xl bg-emerald-950/40 border border-emerald-500/20 text-left flex items-center gap-3 text-xs mb-4">
           <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0" />
           <div className="text-[11px] text-gray-300">
             <strong className="text-white">KBK Quality Assurance:</strong> 100% Halal Certified, Farm Slaughtered & Delivered Fresh on Weekend Morning.
           </div>
         </div>
 
-        {/* Action Button: Continue Shopping */}
-        <button
-          onClick={onClose}
-          className="w-full py-3 px-6 rounded-full btn-crimson text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-rose-950/60 cursor-pointer"
-        >
-          <ShoppingBag className="w-4 h-4" />
-          <span>Continue Shopping</span>
-          <ArrowRight className="w-4 h-4" />
-        </button>
+        {/* Action Buttons: Print Bill / Receipt & Continue Shopping */}
+        <div className="space-y-2.5">
+          <button
+            type="button"
+            onClick={handlePrintReceipt}
+            className="w-full py-2.5 px-4 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md"
+          >
+            <Printer className="w-4 h-4 text-emerald-400" />
+            <span>{t.printReceipt}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-full py-3 px-6 rounded-full btn-crimson text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-rose-950/60 cursor-pointer"
+          >
+            <ShoppingBag className="w-4 h-4" />
+            <span>{t.continueShopping}</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
 
       </div>
     </div>

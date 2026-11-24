@@ -9,6 +9,8 @@ import QuickViewModal from './components/QuickViewModal';
 import OrderSuccessModal from './components/OrderSuccessModal';
 import AdminDashboardModal from './components/AdminDashboardModal';
 import Footer from './components/Footer';
+import PincodeCheckerModal from './components/PincodeCheckerModal';
+import FloatingWhatsApp from './components/FloatingWhatsApp';
 import api from './services/api';
 import { PRODUCTS } from './data/mockData';
 
@@ -27,8 +29,18 @@ export default function App() {
   // Modals
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const [isPincodeModalOpen, setIsPincodeModalOpen] = useState(false);
   const [quickViewProduct, setQuickViewProduct] = useState(null);
   const [orderData, setOrderData] = useState(null);
+
+  // Bilingual Language State ('en' | 'ta')
+  const [lang, setLangState] = useState(() => localStorage.getItem('kbk_lang') || 'en');
+  const [verifiedPincode, setVerifiedPincode] = useState(() => localStorage.getItem('kbk_delivery_pincode') || '');
+
+  const setLang = (newLang) => {
+    setLangState(newLang);
+    localStorage.setItem('kbk_lang', newLang);
+  };
 
   // Toast Notification state
   const [toast, setToast] = useState(null);
@@ -187,12 +199,17 @@ export default function App() {
         activeSection={activeSection}
         setActiveSection={setActiveSection}
         onSelectCategory={handleSelectCategory}
+        lang={lang}
+        setLang={setLang}
+        onOpenPincodeChecker={() => setIsPincodeModalOpen(true)}
+        verifiedPincode={verifiedPincode}
       />
 
       {/* Main Content Area */}
       <main>
         {/* Cinematic Hero Section */}
         <HeroSection
+          lang={lang}
           onShopNow={() => {
             const el = document.getElementById('marketplace');
             if (el) el.scrollIntoView({ behavior: 'smooth' });
@@ -243,6 +260,7 @@ export default function App() {
         onRemoveItem={handleRemoveItem}
         onClearCart={handleClearCart}
         onCheckoutSuccess={handleCheckoutSuccess}
+        lang={lang}
       />
 
       {/* Product Quick View Inspector Modal */}
@@ -258,7 +276,22 @@ export default function App() {
       <OrderSuccessModal
         orderData={orderData}
         onClose={() => setOrderData(null)}
+        lang={lang}
       />
+
+      {/* Pincode & Delivery Area Checker Modal */}
+      <PincodeCheckerModal
+        isOpen={isPincodeModalOpen}
+        onClose={() => setIsPincodeModalOpen(false)}
+        onPincodeSelected={(code) => {
+          setVerifiedPincode(code);
+          showToast(`Verified Delivery Pincode: ${code}`);
+        }}
+        lang={lang}
+      />
+
+      {/* Floating WhatsApp Quick Action Help & Bulk Order Button */}
+      <FloatingWhatsApp lang={lang} />
 
       {/* Admin Dashboard Console Modal */}
       <AdminDashboardModal

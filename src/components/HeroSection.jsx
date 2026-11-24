@@ -1,7 +1,9 @@
 import React from 'react';
 import { Star, Users, ArrowRight, LayoutGrid, ShieldCheck, Award, Sparkles, CalendarCheck } from 'lucide-react';
+import { translations } from '../utils/translations';
 
-export default function HeroSection({ onShopNow, onExplore }) {
+export default function HeroSection({ onShopNow, onExplore, lang = 'en' }) {
+  const t = translations[lang] || translations.en;
   return (
     <section id="hero" className="relative min-h-[92vh] lg:min-h-screen pt-28 sm:pt-32 pb-16 flex items-center justify-center overflow-hidden">
       {/* Cinematic Background Image Layer */}
@@ -53,13 +55,13 @@ export default function HeroSection({ onShopNow, onExplore }) {
 
             {/* Subtitle explaining the business model */}
             <p className="text-gray-300 text-sm sm:text-base md:text-lg font-medium max-w-lg leading-relaxed">
-              Fresh Quality. Trusted Taste. Pre-order Monday through Friday — Farm harvested & delivered fresh to your doorstep every Saturday & Sunday morning.
+              {t.heroDesc}
             </p>
 
             {/* Live Weekend Booking Status Pill */}
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-semibold">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-              <span>Pre-Booking is Open for Upcoming Saturday & Sunday</span>
+              <span>{lang === 'ta' ? 'வரும் சனி & ஞாயிறு டெலிவரிக்கான முன்பதிவு நடைபெறுகிறது' : 'Pre-Booking is Open for Upcoming Saturday & Sunday'}</span>
             </div>
 
             {/* Ratings & Social Proof Stats */}
@@ -106,7 +108,7 @@ export default function HeroSection({ onShopNow, onExplore }) {
                 onClick={onShopNow}
                 className="btn-crimson px-7 py-3 rounded-full text-xs sm:text-sm font-bold text-white flex items-center gap-2.5 group cursor-pointer"
               >
-                <span>Shop Now</span>
+                <span>{t.preBookNowBtn}</span>
                 <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
               </button>
 
@@ -115,7 +117,7 @@ export default function HeroSection({ onShopNow, onExplore }) {
                 className="btn-glass px-6 py-3 rounded-full text-xs sm:text-sm font-semibold text-gray-200 hover:text-white flex items-center gap-2 group cursor-pointer"
               >
                 <LayoutGrid className="w-4 h-4 text-rose-300 transition-transform group-hover:rotate-45" />
-                <span>Explore Products</span>
+                <span>{t.exploreMenuBtn}</span>
               </button>
             </div>
 
