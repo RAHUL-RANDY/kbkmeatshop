@@ -13,13 +13,17 @@ class EmailService:
 
     @staticmethod
     def get_smtp_config():
+        from dotenv import load_dotenv
+        env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), '.env')
+        if os.path.exists(env_path):
+            load_dotenv(env_path, override=True)
         return {
             'host': os.getenv('SMTP_HOST', 'smtp.gmail.com'),
             'port': int(os.getenv('SMTP_PORT', 587)),
             'user': os.getenv('SMTP_USER', '').strip(),
-            'password': os.getenv('SMTP_PASSWORD', '').strip(),
+            'password': os.getenv('SMTP_PASSWORD', '').strip().replace(' ', ''),
             'use_tls': os.getenv('SMTP_USE_TLS', 'true').lower() in ('true', '1', 'yes'),
-            'from_email': os.getenv('SMTP_FROM_EMAIL', os.getenv('SMTP_USER', 'orders@kbkmeatshop.com')).strip(),
+            'from_email': f"KBK MEAT SHOP <{os.getenv('SMTP_USER', 'kbkmeatshop@gmail.com').strip()}>",
             'admin_email': os.getenv('ADMIN_EMAIL', 'kbkmeatshop@gmail.com').strip()
         }
 
@@ -301,8 +305,9 @@ Store Helpline / WhatsApp: +91 98427 29718
             try:
                 msg = MIMEMultipart('alternative')
                 msg['Subject'] = subject
-                msg['From'] = config['from_email']
+                msg['From'] = f"KBK MEAT SHOP <{config['user']}>"
                 msg['To'] = to_email
+                msg['Reply-To'] = config['user']
 
                 part1 = MIMEText(text_content, 'plain', 'utf-8')
                 msg.attach(part1)
