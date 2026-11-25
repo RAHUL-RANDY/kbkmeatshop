@@ -35,7 +35,10 @@ export default function App() {
 
   // Bilingual Language State ('en' | 'ta')
   const [lang, setLangState] = useState(() => localStorage.getItem('kbk_lang') || 'en');
-  const [verifiedPincode, setVerifiedPincode] = useState(() => localStorage.getItem('kbk_delivery_pincode') || '');
+  const [verifiedPincode, setVerifiedPincode] = useState(() => {
+    const saved = localStorage.getItem('kbk_delivery_pincode') || '';
+    return ['608001', '608002', '608102', '608601'].includes(saved) ? saved : '';
+  });
 
   const setLang = (newLang) => {
     setLangState(newLang);

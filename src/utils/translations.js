@@ -90,8 +90,8 @@ export const translations = {
     checkAvailabilityBtn: 'Check Availability',
     deliveryAvailable: 'Delivery Available!',
     deliveryAvailableDesc: 'Fresh morning delivery (6:00 AM - 10:00 AM) available in your area every Saturday & Sunday.',
-    deliveryOutside: 'Currently Outside Standard Radius',
-    deliveryOutsideDesc: 'We primarily service Chennai & nearby regions. Please contact us via WhatsApp for custom weekend bulk deliveries.',
+    deliveryOutside: 'Outside Chidambaram 10 km Radius',
+    deliveryOutsideDesc: 'We deliver only within a 10 km radius around Chidambaram (PIN: 608001, 608002, 608102, 608601). Please contact us via WhatsApp for special bulk orders.',
 
     // Printable Receipt
     printReceipt: 'Print / Download Receipt',
@@ -191,8 +191,8 @@ export const translations = {
     checkAvailabilityBtn: 'இருப்பை சரிபார்',
     deliveryAvailable: 'டெலிவரி உண்டு!',
     deliveryAvailableDesc: 'சனி & ஞாயிறு அதிகாலை (காலை 6:00 - 10:00) உங்கள் முகவரிக்கே புதிய இறைச்சி டெலிவரி உண்டு.',
-    deliveryOutside: 'வழக்கமான வரம்பிற்கு அப்பால் உள்ளது',
-    deliveryOutsideDesc: 'சென்னை மற்றும் சுற்றுவட்டார பகுதிகளுக்கு முக்கிய சேவை. விசேஷ மொத்த ஆர்டர்களுக்கு எங்களை வாட்ஸ்அப்பில் தொடர்பு கொள்ளவும்.',
+    deliveryOutside: 'சிதம்பரம் 10 கி.மீ சுற்றளவிற்கு வெளியே உள்ளது',
+    deliveryOutsideDesc: 'தற்போது சிதம்பரம் மற்றும் 10 கி.மீ சுற்றளவில் உள்ள பகுதிகளுக்கு மட்டுமே டெலிவரி செய்கிறோம் (608001, 608002, 608102, 608601). விசேஷ மொத்த ஆர்டர்களுக்கு வாட்ஸ்அப்பில் தொடர்பு கொள்ளவும்.',
 
     // Printable Receipt
     printReceipt: 'ரசீதை அச்சிடுக / பதிவிறக்கு (Print / PDF)',

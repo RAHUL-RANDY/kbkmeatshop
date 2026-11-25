@@ -69,8 +69,8 @@ class handler(BaseHTTPRequestHandler):
         phone = data.get('phone') or '9842729718'
         customer_email = data.get('email')
         address_line = data.get('address_line') or 'Doorstep Delivery'
-        city = data.get('city') or 'Chennai'
-        pincode = data.get('pincode') or '600040'
+        city = data.get('city') or 'Chidambaram'
+        pincode = data.get('pincode') or '608001'
         payment_method = data.get('payment_method') or 'COD'
         delivery_day = data.get('delivery_day') or 'Weekend Morning (6:00 AM - 10:00 AM)'
         items = data.get('items') or []

@@ -2,17 +2,21 @@ import React, { useState } from 'react';
 import { X, MapPin, CheckCircle2, AlertCircle, ArrowRight, Clock, Truck } from 'lucide-react';
 import { translations } from '../utils/translations';
 
+const ALLOWED_CHIDAMBARAM_PINCODES = ['608001', '608002', '608102', '608601'];
+
 const POPULAR_AREAS = [
-  { name: 'Anna Nagar', pincode: '600040' },
-  { name: 'Mylapore', pincode: '600004' },
-  { name: 'Velachery / OMR', pincode: '600042' },
-  { name: 'Tambaram', pincode: '600045' },
-  { name: 'T. Nagar', pincode: '600017' }
+  { name: 'Chidambaram Town', pincode: '608001' },
+  { name: 'Annamalainagar', pincode: '608002' },
+  { name: 'Killai / C. Mutlur', pincode: '608102' },
+  { name: 'Bhuvanagiri', pincode: '608601' }
 ];
 
 export default function PincodeCheckerModal({ isOpen, onClose, onPincodeSelected, lang = 'en' }) {
   const t = translations[lang] || translations.en;
-  const [pincode, setPincode] = useState(() => localStorage.getItem('kbk_delivery_pincode') || '');
+  const [pincode, setPincode] = useState(() => {
+    const saved = localStorage.getItem('kbk_delivery_pincode') || '';
+    return ALLOWED_CHIDAMBARAM_PINCODES.includes(saved) ? saved : '';
+  });
   const [checkResult, setCheckResult] = useState(null);
 
   if (!isOpen) return null;
@@ -27,8 +31,8 @@ export default function PincodeCheckerModal({ isOpen, onClose, onPincodeSelected
       return;
     }
 
-    // Tamil Nadu pincodes start with 60, 61, 62, 63, 64
-    if (clean.startsWith('60') || clean.startsWith('61') || clean.startsWith('62') || clean.startsWith('63') || clean.startsWith('64')) {
+    // Chidambaram & 10 km surrounding pincodes
+    if (ALLOWED_CHIDAMBARAM_PINCODES.includes(clean)) {
       localStorage.setItem('kbk_delivery_pincode', clean);
       setCheckResult({
         status: 'success',
@@ -97,7 +101,7 @@ export default function PincodeCheckerModal({ isOpen, onClose, onPincodeSelected
                 setPincode(e.target.value.replace(/\D/g, ''));
                 if (checkResult) setCheckResult(null);
               }}
-              placeholder="e.g. 600040"
+              placeholder="e.g. 608001"
               className="w-full pl-12 pr-3 py-2.5 rounded-xl glass-input text-sm font-mono font-bold text-white focus:ring-2 focus:ring-rose-500/50"
               autoFocus
             />
@@ -156,7 +160,7 @@ export default function PincodeCheckerModal({ isOpen, onClose, onPincodeSelected
         {/* Quick Popular Area Chips */}
         <div className="mt-5 pt-4 border-t border-white/10 text-left">
           <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-2">
-            {lang === 'ta' ? 'பிரபலமான பகுதிகள்:' : 'Popular Service Hubs:'}
+            {lang === 'ta' ? 'சிதம்பரம் 10 கி.மீ டெலிவரி பகுதிகள்:' : 'Chidambaram 10 km Service Areas:'}
           </span>
           <div className="flex flex-wrap gap-1.5">
             {POPULAR_AREAS.map((area) => (

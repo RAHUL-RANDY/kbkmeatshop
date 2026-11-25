@@ -80,8 +80,14 @@ export default function CartDrawer({
       setCheckoutError('Please enter your Street Address / House No.');
       return;
     }
-    if (!deliveryAddress.pincode.trim()) {
-      setCheckoutError('Please enter your Delivery PIN Code.');
+    const cleanPin = deliveryAddress.pincode.replace(/\D/g, '');
+    if (!cleanPin || cleanPin.length !== 6) {
+      setCheckoutError('Please enter a valid 6-digit Delivery PIN Code.');
+      return;
+    }
+    const allowedPincodes = ['608001', '608002', '608102', '608601'];
+    if (!allowedPincodes.includes(cleanPin)) {
+      setCheckoutError('Sorry! We deliver only within 10 km around Chidambaram (PIN: 608001, 608002, 608102, 608601).');
       return;
     }
 
@@ -95,8 +101,8 @@ export default function CartDrawer({
         phone: deliveryAddress.phone.trim(),
         email: deliveryAddress.email ? deliveryAddress.email.trim() : undefined,
         address_line: deliveryAddress.address_line.trim(),
-        city: deliveryAddress.city || 'Chennai',
-        pincode: deliveryAddress.pincode || '600040',
+        city: deliveryAddress.city || 'Chidambaram',
+        pincode: cleanPin || '608001',
         payment_method: paymentMethod,
         delivery_day: deliveryDay,
         notes: `Weekend Delivery: ${deliveryDay}${paymentMethod === 'UPI' ? ` | Paid via UPI (Ref/UTR: ${upiUtr.trim() || 'Pre-Paid'})` : ''}`,
@@ -125,7 +131,7 @@ export default function CartDrawer({
         discountAmount: placedOrder.discount_amount,
         customerName: deliveryAddress.recipient_name.trim(),
         phone: deliveryAddress.phone.trim(),
-        address: `${deliveryAddress.address_line.trim()}, ${deliveryAddress.city || 'Chennai'} - ${deliveryAddress.pincode || '600040'}`,
+        address: `${deliveryAddress.address_line.trim()}, ${deliveryAddress.city || 'Chidambaram'} - ${cleanPin || '608001'}`,
         deliveryDay: deliveryDay,
         notification: placedOrder.notification
       });
@@ -150,7 +156,7 @@ export default function CartDrawer({
         discountAmount,
         customerName: deliveryAddress.recipient_name.trim(),
         phone: deliveryAddress.phone.trim(),
-        address: `${deliveryAddress.address_line.trim()}, ${deliveryAddress.city || 'Chennai'} - ${deliveryAddress.pincode || '600040'}`,
+        address: `${deliveryAddress.address_line.trim()}, ${deliveryAddress.city || 'Chidambaram'} - ${cleanPin || '608001'}`,
         deliveryDay: deliveryDay
       });
       setStep('cart');
@@ -442,24 +448,28 @@ export default function CartDrawer({
                       <label className="block text-[10px] text-gray-300 font-medium mb-1">City</label>
                       <input
                         type="text"
-                        placeholder="Chennai"
+                        placeholder="Chidambaram"
                         value={deliveryAddress.city}
                         onChange={(e) => setDeliveryAddress({ ...deliveryAddress, city: e.target.value })}
                         className="w-full px-3 py-2 rounded-lg glass-input text-xs"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] text-gray-300 font-medium mb-1">PIN Code</label>
+                      <label className="block text-[10px] text-gray-300 font-medium mb-1">PIN Code (10 km Chidambaram)</label>
                       <input
                         type="text"
                         required
-                        placeholder="600040"
+                        maxLength={6}
+                        placeholder="608001"
                         value={deliveryAddress.pincode}
-                        onChange={(e) => setDeliveryAddress({ ...deliveryAddress, pincode: e.target.value })}
-                        className="w-full px-3 py-2 rounded-lg glass-input text-xs"
+                        onChange={(e) => setDeliveryAddress({ ...deliveryAddress, pincode: e.target.value.replace(/\D/g, '') })}
+                        className="w-full px-3 py-2 rounded-lg glass-input text-xs font-mono"
                       />
                     </div>
                   </div>
+                  <p className="text-[10px] text-emerald-300/90 mt-1">
+                    📍 Delivery available within 10 km of Chidambaram: <strong>608001, 608002, 608102, 608601</strong>
+                  </p>
                 </div>
               </div>
 
